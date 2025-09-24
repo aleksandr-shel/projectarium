@@ -22,6 +22,19 @@ def test_re(text:str):
     
     return words
 
+def basic_analyze(text:str):
+
+    
+    return dict({
+        "char_count":100,
+        "words_count":50,
+        "sentence_count":2,
+        "word_dict":{
+            "hui":1,
+            "dermo":2
+        }
+    })
+
 if __name__ == "__main__":
     # select_top_words("In recent years, artificial intelligence has transformed industries around the world. From self-driving cars to personalized healthcare, the technology is reshaping how we live and work. However, with rapid advancement comes ethical concerns — particularly around job displacement and data privacy. Experts urge that while innovation is essential, regulation must keep pace to ensure a fair and secure future for all.")
     ans = select_top_words("hell hell where are you? are are you. there something wrong?")

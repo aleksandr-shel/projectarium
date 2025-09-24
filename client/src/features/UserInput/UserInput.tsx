@@ -7,9 +7,6 @@ const StyledForm = styled.form<{$stacked: boolean}>`
     border:1px solid lightgray;
     border-radius: 30px;
     padding: 7px;
-    /* display: flex;
-    justify-content: space-between;
-    align-items: center; */
     min-width: 400px;
     width: 90vw;
     max-width: 800px;
@@ -22,17 +19,18 @@ const StyledForm = styled.form<{$stacked: boolean}>`
     z-index: 1100;
 
     display: grid;
-    grid-template-columns: 50px 1fr 50px;
+    grid-template-columns: 1fr 50px;
+    /* grid-template-columns: 50px 1fr 50px; */
     grid-template-rows: auto;
     grid-template-areas: ${({$stacked})=>(
         $stacked ? 
         `
-            "ta ta ta"
-            "add . send"
+            "ta ta"
+            ". send"
         `
         :
         `
-            "add ta send"
+            "ta send"
         `
     )};
     column-gap: 6px;
@@ -98,6 +96,11 @@ function UserInput({bottom="50%"}:Props) {
     const {analyzerStore:{sendMessage}} = useStore();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     
+    // cache metrics once
+    // vpad - vertical padding
+    const metricsRef = useRef<{lineHeight:number, vpad:number}|null>(null);
+    // rAF guard, (request animation frame)
+    const rafRef = useRef<number | null>(null);
     
     function handleSubmit(){
         if (text){
@@ -118,20 +121,35 @@ function UserInput({bottom="50%"}:Props) {
     }
 
     useEffect(()=>{
-        const textarea = textareaRef.current;
-        if (!textarea) return;
-
-        // auto resize
-        textarea.style.height = "auto";
-        textarea.style.height = textarea.scrollHeight + "px";
-        
-        // rows calc
+        const textarea = textareaRef.current!;
         const computedStyle = window.getComputedStyle(textarea);
         const lineHeight = parseFloat(computedStyle.lineHeight);
-        const rows = Math.round(textarea.scrollHeight / lineHeight);
-        setStacked(rows >= 2);
-        
+        const vpad = parseFloat(computedStyle.paddingTop) + parseFloat(computedStyle.paddingBottom);
+        metricsRef.current = {lineHeight, vpad}
+    },[])
+
+    useEffect(()=>{
+        const textarea = textareaRef.current;
+        if (!textarea || !metricsRef.current) return;
+
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+
+        rafRef.current = requestAnimationFrame(()=> {
+            // auto resize
+            textarea.style.height = "auto";
+            const sh = textarea.scrollHeight
+            textarea.style.height = `${sh}px`;
+            
+            const {lineHeight, vpad} = metricsRef.current!;
+            const rows = Math.round((sh - vpad)/lineHeight);
+            setStacked(rows >= 2);
+        })
+
+        return ()=>{
+            cancelAnimationFrame(rafRef.current)
+        }
     },[text])
+
 
     return ( 
         <StyledForm
@@ -145,9 +163,9 @@ function UserInput({bottom="50%"}:Props) {
             onSubmit={(e)=>{e.preventDefault(); handleSubmit()}}
             onKeyDown={(e)=>handleKeyDown(e)}
         >
-            <button className='addFileBtn'>
+            {/* <button className='addFileBtn'>
                 +
-            </button>
+            </button> */}
             <div className='ta-wrapper'>
                  <textarea 
                 ref={textareaRef}

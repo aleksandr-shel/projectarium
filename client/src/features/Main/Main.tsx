@@ -20,6 +20,7 @@ const MessagesDiv = styled.div`
     flex-direction: column;
     justify-content: end;
     margin-bottom: 90px;
+    padding: 0;
 `
 
 export default observer(function Main() {

@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory
-from analyzer import count_words
+from analyzer import count_words, basic_analyze
 from pathlib import Path
 from werkzeug.exceptions import NotFound
 from flask_cors import CORS
@@ -20,12 +20,9 @@ def process_text():
         if type(text) is not str:
             return "not a string"
         
-        words = count_words(text)
+        d = basic_analyze(text)
         
-        return jsonify({
-            "text": text,
-            "count": words
-            })
+        return jsonify(d)
     elif request.method =='GET':
         return "send text"
     else:
